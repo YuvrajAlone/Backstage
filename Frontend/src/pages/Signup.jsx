@@ -71,7 +71,7 @@ function Signup() {
         <div>
           <Link to="/">
             <p className="font-mono text-[12px] uppercase tracking-[0.3em] text-brass">
-              ←Back
+              Back
             </p>
           </Link>
           <h2 className="mt-2 font-display text-3xl tracking-tight text-bone">

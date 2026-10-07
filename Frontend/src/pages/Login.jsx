@@ -68,7 +68,7 @@ function Login() {
         <div>
           <Link to="/">
             <p className="font-mono text-[12px] uppercase tracking-[0.3em] text-brass">
-              ←Back
+              Back
             </p>
           </Link>
 
