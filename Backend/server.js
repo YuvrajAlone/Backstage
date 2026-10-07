@@ -13,6 +13,10 @@ dotenv.config();
 
 const app = express();
 
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 const PgStore = connectPgSimple(session);
 
 app.use(
@@ -36,7 +40,8 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 1000 * 60 * 60 * 24 * 7,
     },
   }),
@@ -47,14 +52,4 @@ app.use("/api/frames", frameRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/money", moneyRoutes);
 
-app.get("/", (req, res) => {
-  res.json({
-    message: "Snooker backend is running",
-  });
-});
-
-const PORT = process.env.PORT;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+export default app;

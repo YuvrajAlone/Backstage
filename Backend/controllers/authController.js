@@ -41,9 +41,18 @@ export const registerPlayer = async (req, res) => {
       [normalizedUsername, passwordHash],
     );
 
+    const newUser = result.rows[0];
+
+    // Automatically log the player in
+    req.session.user = {
+      id: newUser.id,
+      username: newUser.username,
+      user_role: newUser.user_role,
+    };
+
     res.status(201).json({
       message: "Player registered successfully",
-      user: result.rows[0],
+      user: req.session.user,
     });
   } catch (error) {
     console.error("Register error:", error);

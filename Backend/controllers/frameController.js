@@ -111,6 +111,7 @@ export const getFrames = async (req, res) => {
         f.id,
         f.game_type,
         f.played_at,
+        f.status,
 
         u1.username AS player1,
         u2.username AS player2,
@@ -139,6 +140,158 @@ export const getFrames = async (req, res) => {
     });
   } catch (error) {
     console.error("Get frames error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+export const getFrame = async (req, res) => {
+  try {
+    const { frameId } = req.params;
+
+    const frameResult = await pool.query(
+      `
+      SELECT
+        f.id,
+        f.game_type,
+        f.played_at,
+        f.status,
+        f.completed_at,
+
+        u1.id AS player1_id,
+        u1.username AS player1,
+
+        u2.id AS player2_id,
+        u2.username AS player2,
+
+        u3.id AS player3_id,
+        u3.username AS player3,
+
+        u4.id AS player4_id,
+        u4.username AS player4
+
+      FROM frames f
+
+      JOIN users u1
+        ON f.player1_id = u1.id
+
+      JOIN users u2
+        ON f.player2_id = u2.id
+
+      LEFT JOIN users u3
+        ON f.player3_id = u3.id
+
+      LEFT JOIN users u4
+        ON f.player4_id = u4.id
+
+      WHERE f.id = $1
+      `,
+      [frameId],
+    );
+
+    if (frameResult.rows.length === 0) {
+      return res.status(404).json({
+        message: "Frame not found",
+      });
+    }
+
+    const frame = frameResult.rows[0];
+
+    const players = [
+      {
+        id: frame.player1_id,
+        username: frame.player1,
+      },
+      {
+        id: frame.player2_id,
+        username: frame.player2,
+      },
+      frame.player3_id
+        ? {
+            id: frame.player3_id,
+            username: frame.player3,
+          }
+        : null,
+      frame.player4_id
+        ? {
+            id: frame.player4_id,
+            username: frame.player4,
+          }
+        : null,
+    ].filter(Boolean);
+
+    // Find unpaid charges created from this frame
+    const moneyResult = await pool.query(
+      `
+      SELECT
+        player_id,
+        added_amount
+      FROM money_records
+      WHERE frame_id = $1
+        AND added_amount > 0
+      `,
+      [frameId],
+    );
+
+    const unpaidPlayerIds = new Set(
+      moneyResult.rows.map((record) => record.player_id),
+    );
+
+    const playersWithStatus = players.map((player) => ({
+      ...player,
+      paymentStatus: unpaidPlayerIds.has(player.id) ? "unpaid" : "paid",
+    }));
+
+    res.json({
+      frame: {
+        id: frame.id,
+        gameType: frame.game_type,
+        playedAt: frame.played_at,
+        status: frame.status,
+        completedAt: frame.completed_at,
+        players: playersWithStatus,
+      },
+    });
+  } catch (error) {
+    console.error("Get frame error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+export const completeFrame = async (req, res) => {
+  try {
+    const { frameId } = req.params;
+
+    const result = await pool.query(
+      `
+      UPDATE frames
+      SET
+        status = 'completed',
+        completed_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+        AND status = 'ongoing'
+      RETURNING *;
+      `,
+      [frameId],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({
+        message: "Frame not found or already completed",
+      });
+    }
+
+    res.json({
+      message: "Frame completed successfully",
+      frame: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Complete frame error:", error);
 
     res.status(500).json({
       message: "Server error",

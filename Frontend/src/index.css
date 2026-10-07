@@ -1,0 +1,33 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-background: #09090b;
+  --color-foreground: #f4f4f5;
+
+  --color-surface: #111113;
+  --color-border: #27272a;
+
+  --color-muted-foreground: #a1a1aa;
+
+  --color-gold: #d4af37;
+  --color-gold-soft: #e5c158;
+
+  --color-emerald-accent: #10b981;
+
+  --font-display: "Playfair Display", serif;
+
+  --color-ink: #06140f;
+  --color-ink-2: #0b241a;
+  --color-bone: #f4efe4;
+  --color-bone-2: #cfc7b4;
+  --color-brass: #c9a24b;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}

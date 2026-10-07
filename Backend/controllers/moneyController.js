@@ -1,5 +1,6 @@
 import pool from "../config/db.js";
 
+// add as unpaid by owner
 export const markPlayerUnpaid = async (req, res) => {
   try {
     const { frameId } = req.params;
@@ -20,7 +21,8 @@ export const markPlayerUnpaid = async (req, res) => {
         player1_id,
         player2_id,
         player3_id,
-        player4_id
+        player4_id,
+        status
       FROM frames
       WHERE id = $1
       `,
@@ -34,6 +36,12 @@ export const markPlayerUnpaid = async (req, res) => {
     }
 
     const frame = frameResult.rows[0];
+
+    if (frame.status !== "ongoing") {
+      return res.status(400).json({
+        message: "This frame has already been completed",
+      });
+    }
 
     // Check player belongs to this frame
     const playerIds = [
@@ -118,6 +126,7 @@ export const markPlayerUnpaid = async (req, res) => {
   }
 };
 
+// player get to see their history
 export const getMyMoney = async (req, res) => {
   try {
     const playerId = req.user.id;
@@ -166,6 +175,7 @@ export const getMyMoney = async (req, res) => {
   }
 };
 
+// owner add money for the unpaid once who paid
 export const addPayment = async (req, res) => {
   try {
     const { playerId } = req.params;
@@ -256,6 +266,7 @@ export const addPayment = async (req, res) => {
   }
 };
 
+// owner get's player history
 export const getPlayerMoney = async (req, res) => {
   try {
     const { playerId } = req.params;
@@ -321,10 +332,11 @@ export const getPlayerMoney = async (req, res) => {
   }
 };
 
+// add's money without creating frames
 export const addMoney = async (req, res) => {
   try {
     const { playerId } = req.params;
-    const { amount, date } = req.body;
+    const { amount } = req.body;
 
     // 1. Validate amount
     const addedAmount = Number(amount);
@@ -359,19 +371,17 @@ export const addMoney = async (req, res) => {
         player_id,
         frame_id,
         added_amount,
-        paid_amount,
-        recorded_at
+        paid_amount
       )
       VALUES (
         $1,
         NULL,
         $2,
-        0,
-        COALESCE($3::timestamp, CURRENT_TIMESTAMP)
+        0
       )
       RETURNING *;
       `,
-      [playerId, addedAmount, date || null],
+      [playerId, addedAmount],
     );
 
     res.status(201).json({
