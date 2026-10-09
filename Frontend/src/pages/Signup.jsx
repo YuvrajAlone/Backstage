@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import api from "../lib/axios";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 function Signup() {
+  const { setUser } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -43,6 +45,8 @@ function Signup() {
       });
 
       const user = response.data.user;
+
+      setUser(user);
 
       if (user.user_role === "player") {
         navigate("/player");
