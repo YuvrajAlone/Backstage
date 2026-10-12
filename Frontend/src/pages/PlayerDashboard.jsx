@@ -84,7 +84,13 @@ function PlayerDashboard() {
 
         {/* Welcome */}
         <section className="mt-5">
-          <h1 className="max-w-2xl font-display text-3xl font-bold leading-tight sm:mt-4 sm:text-5xl">
+          <h1
+            className={`whitespace-nowrap font-display font-bold leading-tight sm:mt-4 ${
+              (user?.username?.length || 0) > 10
+                ? "text-2xl sm:text-4xl"
+                : "text-3xl sm:text-5xl"
+            }`}
+          >
             Welcome
             <span className="text-gold/70">
               {user?.username
@@ -96,7 +102,7 @@ function PlayerDashboard() {
         </section>
 
         {/* Current Balance */}
-        <section className="mt-7 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+        <section className="mt-5 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
           <p className="text-sm text-zinc-500">Amount Due</p>
 
           <p className="mt-2 text-4xl text-orange-300 font-semibold tracking-tight">
@@ -111,7 +117,7 @@ function PlayerDashboard() {
         )}
 
         {/* Ledger */}
-        <section className="mt-9">
+        <section className="mt-5">
           <div className="mb-4">
             <h2 className="mt-1 text-xl font-display">Money Ledger</h2>
           </div>
